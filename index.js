@@ -1,5 +1,5 @@
 const Board = (() => {
-    let graph = createGraph(3);
+    let graph = createGraph(5);
 
     function resizeGraph(dimension) {
         if (dimension < 3) {
@@ -10,32 +10,25 @@ const Board = (() => {
         graph = createGraph(dimension);
     }
 
+    /**
+     *
+     * @param {*} height
+     * @returns Adjacency list for all possible moves; key: string, value: array containing possible moves from cell {x, y}
+     */
     function createGraph(height) {
         const graph = new Map();
 
         for (let x = 0; x < height; x++) {
             for (let y = 0; y < height; y++) {
-                graph.set(`${[x, y]}`, knightMoves(x, y, height));
+                graph.set(`${x},${y}`, knightMoves(x, y, height));
             }
         }
 
-        const keys = Array.from(graph.keys());
-
-        for (let key of keys) {
-            let content = '';
-            let contents = graph.get(key);
-
-            if (!contents.length) {
-                content = '[blank]';
-            } else {
-                contents.forEach((item) => {
-                    content += `[${item[0]},${item[1]}] `;
-                });
-            }
-
-            console.log(`[${key}]: ${content}`);
-        }
         return graph;
+    }
+
+    function createNode(x, y) {
+        return { x, y };
     }
 
     /**
@@ -66,42 +59,55 @@ const Board = (() => {
                 continue;
             }
 
-            possibleMoves.push([newX, newY]);
+            possibleMoves.push(createNode(newX, newY));
         }
 
         return possibleMoves;
     }
 
     function getShortestPath(start, end) {
-        const startX = start[0];
-        const startY = start[1];
-        const endX = end[0];
-        const endY = end[1];
+        const queue = [start];
+        const previous = new Map(); // remember parent for each cell
 
-        console.log(`------------------------------`);
-        console.log(`Start: [${start}], End: [${end}]`);
-        // set to remember visited cells
-        // DFS
+        while (queue.length) {
+            // pop for current node
+            const [x, y] = queue.pop();
+            const key = `${x},${y}`;
+            const possibleMoves = graph.get(key);
 
-        helper(startX, startY);
-
-        function helper(x, y, visited = new Set(`${[2, 0]}`)) {
-            visited.add(`${[x, y]}`);
-            console.log(visited);
-
-            if (x === endX && y === endY) {
-                return { count: 0, coord: [x, y] };
-            }
-
-            const possibleMoves = graph.get(`${[x, y]}`);
-
+            //  if not visited add to queue and store parent
             for (let move of possibleMoves) {
-                console.log(move);
-                if (!visited.has(move)) {
-                    console.log('nope');
+                const moveKey = `${move.x},${move.y}`;
+
+                if (previous.has(moveKey)) {
+                    continue;
+                }
+
+                queue.push([move.x, move.y]);
+                previous.set(moveKey, createNode(x, y)); // store parent
+
+                if (previous.has(`${end[0]},${end[1]}`)) {
+                    break;
                 }
             }
+
+            if (previous.has(`${end[0]},${end[1]}`)) {
+                break;
+            }
         }
+
+        const result = backtrack(start, end, previous);
+        console.log(...result);
+
+        function backtrack(start, end, previous) {}
+
+        /*  Array.from(previous.keys()).forEach((key) => {
+            console.log(
+                `key: ${key}; value: [${previous.get(key).x},${
+                    previous.get(key).y
+                }]`
+            );
+        }); */
     }
 
     return {
@@ -111,4 +117,4 @@ const Board = (() => {
     };
 })();
 
-Board.getShortestPath([1, 2], [2, 0]);
+Board.getShortestPath([3, 3], [4, 3]);
