@@ -66,48 +66,56 @@ const Board = (() => {
     }
 
     function getShortestPath(start, end) {
-        const queue = [start];
-        const previous = new Map(); // remember parent for each cell
+        start = { x: start[0], y: start[1] };
+        end = { x: end[0], y: end[1] };
 
-        while (queue.length) {
-            // pop for current node
-            const [x, y] = queue.pop();
-            const key = `${x},${y}`;
-            const possibleMoves = graph.get(key);
+        return backtrack(start, end, bfs(start));
 
-            //  if not visited add to queue and store parent
-            for (let move of possibleMoves) {
-                const moveKey = `${move.x},${move.y}`;
+        function bfs(start) {
+            const queue = [{ x: start.x, y: start.y }];
+            const distance = new Map();
+            const parent = new Map();
+            let node = start;
+            distance.set(`${node.x},${node.y}`, 0); // distance of starting node is 0
 
-                if (previous.has(moveKey)) {
-                    continue;
-                }
+            while (queue.length) {
+                node = queue.shift();
+                const nodeKey = `${node.x},${node.y}`;
 
-                queue.push([move.x, move.y]);
-                previous.set(moveKey, createNode(x, y)); // store parent
+                for (let move of graph.get(nodeKey)) {
+                    const moveKey = `${move.x},${move.y}`;
 
-                if (previous.has(`${end[0]},${end[1]}`)) {
-                    break;
+                    if (!distance.has(moveKey)) {
+                        parent.set(moveKey, node);
+                        distance.set(moveKey, distance.get(nodeKey) + 1);
+                        queue.push(move);
+                    }
                 }
             }
 
-            if (previous.has(`${end[0]},${end[1]}`)) {
-                break;
-            }
+            return parent;
         }
 
-        const result = backtrack(start, end, previous);
-        console.log(...result);
+        /**
+         * Use shortestPaths adjacency list to find the shortest path from start to end. Uses end node to backtrack to the start node.
+         * @param {node} end - {x, y}
+         * @param {node} start
+         * @param {map} shortestPaths
+         */
+        function backtrack(end, start, shortestPaths) {
+            const path = [];
+            let { x, y } = start;
 
-        function backtrack(start, end, previous) {}
+            while (!(x === end.x && y === end.y)) {
+                path.unshift([x, y]);
+                let current = shortestPaths.get(`${x},${y}`);
+                x = current.x;
+                y = current.y;
+            }
 
-        /*  Array.from(previous.keys()).forEach((key) => {
-            console.log(
-                `key: ${key}; value: [${previous.get(key).x},${
-                    previous.get(key).y
-                }]`
-            );
-        }); */
+            path.unshift([x, y]);
+            return path;
+        }
     }
 
     return {
@@ -117,4 +125,4 @@ const Board = (() => {
     };
 })();
 
-Board.getShortestPath([3, 3], [4, 3]);
+Board.getShortestPath([0, 0], [2, 4]);
