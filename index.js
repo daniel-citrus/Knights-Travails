@@ -1,5 +1,5 @@
-const Board = (() => {
-    let graph = createGraph(5);
+const Board = (size) => {
+    let graph = createGraph(size);
 
     function resizeGraph(dimension) {
         if (dimension < 3) {
@@ -20,7 +20,7 @@ const Board = (() => {
 
         for (let x = 0; x < height; x++) {
             for (let y = 0; y < height; y++) {
-                graph.set(`${x},${y}`, knightMoves(x, y, height));
+                graph.set(`${x},${y}`, getPossibleMoves(x, y, height));
             }
         }
 
@@ -38,7 +38,7 @@ const Board = (() => {
      * @param {number} boundary - board upper-bound
      * @returns {array}
      */
-    function knightMoves(x, y, boundary) {
+    function getPossibleMoves(x, y, boundary) {
         const possibleMoves = [];
         const moves = [
             { x: 2, y: 1 },
@@ -65,12 +65,13 @@ const Board = (() => {
         return possibleMoves;
     }
 
-    function getShortestPath(start, end) {
+    function knightMoves(start, end) {
         start = { x: start[0], y: start[1] };
         end = { x: end[0], y: end[1] };
 
         return backtrack(start, end, bfs(start));
 
+        // Generate a shortest path list for each node relative to the starting node using Dijkstra's algorithm
         function bfs(start) {
             const queue = [{ x: start.x, y: start.y }];
             const distance = new Map();
@@ -120,9 +121,17 @@ const Board = (() => {
 
     return {
         graph,
-        getShortestPath,
+        knightMoves,
         resizeGraph,
     };
-})();
+};
 
-Board.getShortestPath([0, 0], [2, 4]);
+const board = Board(8);
+const moves = board.knightMoves([0, 0], [7, 7]);
+
+console.log(`You made it in ${moves.length - 1} moves!`);
+console.log(`Here's your path:`);
+
+moves.forEach((move) => {
+    console.log(move);
+});
