@@ -81,7 +81,7 @@ const Board = (size) => {
 
             while (queue.length) {
                 node = queue.shift();
-                const nodeKey = `${node.x},${node.y}`;
+                const nodeKey = `s${node.x},${node.y}`;
 
                 for (let move of graph.get(nodeKey)) {
                     const moveKey = `${move.x},${move.y}`;
